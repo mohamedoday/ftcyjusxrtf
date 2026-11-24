@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Админпанель — JAILBROK</title>
+ <link rel="icon" href="/assets/logo.jpg">
+ <link rel="stylesheet" href="/fonts.css">
+ <link rel="stylesheet" href="/admin/style.css">
+ <link rel="stylesheet" href="/admin-support.css">
+ <script src="/admin/app.js?v=security-1" type="module"></script>
+<link rel="stylesheet" href="/work-article.css?v=article-1"></head>
+<body>
+ <header class="app-header">
+  <a class="brand" href="/admin"><span>JAIL</span>BROK <small>Управление сайтом</small></a>
+  <div class="header-actions"><a class="button secondary" href="/#home" target="_blank" rel="noopener">Открыть сайт ↗</a><button class="secondary" id="logout" hidden>Выйти</button></div>
+ </header>
+ <main>
+  <section id="auth" class="login-card">
+   <p class="eyebrow">ДОСТУП АДМИНИСТРАТОРА</p>
+   <h1 id="auth-title">Вход в админпанель</h1>
+   <p id="auth-description">Введи пароль, чтобы управлять материалами и настройками сайта.</p>
+   <form id="login-form">
+    <label id="setup-label" hidden>Ключ первого входа<input id="setup-key" autocomplete="off"></label>
+    <label>Пароль<input id="admin-password" type="password" autocomplete="current-password" required maxlength="256"></label>
+    <label id="admin-code-label" hidden>Код приложения или резервный код<input id="admin-code" autocomplete="one-time-code" maxlength="64" placeholder="6 цифр или резервный код"></label><button type="submit" id="login-button">Войти</button>
+   </form>
+   <p id="auth-message" class="message" role="status" aria-live="polite"></p>
+  </section>
+  <section id="editor" hidden>
+   <div class="page-heading"><div><p class="eyebrow">ПАНЕЛЬ УПРАВЛЕНИЯ</p><h1>Твой сайт под контролем</h1></div><div class="heading-actions"><button id="trial-editor-open" type="button" class="secondary" aria-haspopup="dialog" aria-controls="trial-editor">Пробный промпт</button><span id="draft-status" class="status-pill">Все изменения сохранены</span></div></div>
+   <nav class="tabs" role="tablist" aria-label="Разделы админпанели">
+    <button id="tab-overview" role="tab" aria-controls="panel-overview" aria-selected="true" data-tab="overview">Обзор</button>
+    <button id="tab-models" role="tab" aria-controls="panel-models" aria-selected="false" tabindex="-1" data-tab="models">Модели и промпты</button>
+    <button id="tab-content" role="tab" aria-controls="panel-content" aria-selected="false" tabindex="-1" data-tab="content">Баннеры</button>
+    <button id="tab-settings" role="tab" aria-controls="panel-settings" aria-selected="false" tabindex="-1" data-tab="settings">Настройки сайта</button>
+    <button id="tab-accounts" role="tab" aria-controls="panel-accounts" aria-selected="false" tabindex="-1" data-tab="accounts">Аккаунты</button>
+    <button id="tab-support" role="tab" aria-controls="panel-support" aria-selected="false" tabindex="-1" data-tab="support">Обращения <span id="support-admin-badge" class="support-admin-badge" hidden>0</span></button>
+   </nav>
+   <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+    <div class="section-heading"><div><h2>Обзор сайта</h2><p>Материалы, аккаунты и посещаемость в одном месте.</p></div><button type="button" class="secondary" id="overview-refresh">Обновить</button></div>
+    <div class="summary-grid">
+     <article class="metric-card"><span>Аккаунтов</span><strong id="summary-accounts">—</strong><small><span id="summary-telegram">—</span> с Telegram</small></article>
+     <article class="metric-card"><span>Моделей</span><strong id="summary-models">—</strong><small><span id="summary-ready">—</span> с материалами</small></article>
+     <article class="metric-card"><span>Посетителей за сутки</span><strong id="summary-visitors">—</strong><small id="summary-trend">Загружаем посещаемость</small></article>
+     <article class="metric-card"><span>Просмотров за сутки</span><strong id="summary-views">—</strong><small>Без распознанных роботов</small></article>
+    </div>
+    <p id="overview-message" class="message" role="status"></p>
+    <div class="overview-grid">
+     <article class="panel"><h3>Уникальные посетители</h3><div id="stats-periods" class="stat-list"></div><p id="stats-note" class="muted"></p></article>
+     <article class="panel"><h3>Популярные страницы за сутки</h3><div id="stats-pages" class="stat-list"></div></article>
+    </div>
+   </section>
+   <section id="panel-models" role="tabpanel" aria-labelledby="tab-models" hidden>
+    <div class="section-heading"><div><h2>Модели и промпты</h2><p>Промпты из бота появляются автоматически и отмечены «Из бота». Их редактирование — в Telegram. Отдельные материалы сайта публикуются после сохранения.</p></div><button type="button" class="secondary" id="models-reload">Обновить список</button></div>
+    <div class="filters"><label>Поиск модели<input id="model-search" type="search" placeholder="Название модели"></label><label>Нейросеть<select id="provider-filter"><option value="">Все нейросети</option></select></label></div>
+    <form id="models-form" novalidate>
+     <div id="model-fields" class="editor-grid"></div>
+     <p id="models-empty" class="empty-state" hidden>По этому запросу моделей нет.</p>
+     <div class="save-row"><div><strong id="models-save-state">Список загружен</strong><p id="save-message" class="message" role="status"></p></div><button id="save" type="submit">Сохранить материалы</button></div>
+    </form>
+   </section>
+   <section id="panel-content" role="tabpanel" aria-labelledby="tab-content" hidden>
+    <div class="section-heading"><div><h2>Баннеры сайта</h2><p>Предпросмотр обновляется по мере ввода. Для публикации нажми «Сохранить баннеры».</p></div></div>
+    <form id="content-form">
+     <div class="content-grid">
+      <article class="panel"><h3>Работа J.B. промптов</h3><p id="work-banner-note">Статья между видео. До 12 000 символов. Поддерживаются заголовки # и ##, списки, **выделение**, ссылки и блоки кода.</p><label>Текст баннера<textarea id="work-banner-input" rows="9" maxlength="12000" aria-describedby="work-banner-note" placeholder="Напиши текст"></textarea></label><small id="work-counter"></small></article>
+      <article class="panel"><p class="eyebrow">ПРЕДПРОСМОТР</p><div id="work-preview" class="banner-preview work-article" lang="ru"></div></article>
+      <article class="panel"><h3>Окно подписки</h3><p>Дополнительный текст над преимуществами подписки. До 500 символов.</p><label>Текст в окне оплаты<textarea id="offer-banner-input" rows="4" maxlength="500"></textarea></label><small id="offer-counter"></small></article>
+      <article class="panel"><p class="eyebrow">ПРЕДПРОСМОТР</p><h3>Подписка JAILBROK</h3><div id="offer-preview" class="banner-preview"></div><p class="muted">Способы оплаты и цена берутся из настроек Telegram-бота.</p></article>
+     </div>
+     <div class="save-row"><p id="content-message" class="message" role="status"></p><button type="submit" id="content-save">Сохранить баннеры</button></div>
+    </form>
+   </section>
+   <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+    <div class="section-heading"><div><h2>Страницы, ссылки и оформление</h2><p>Измени нужные поля и сохрани. Для текстов можно задать свою версию на каждом языке. Кнопка «По умолчанию» возвращает исходное значение.</p></div></div>
+    <div class="settings-toolbar"><button id="site-preview" type="button" class="secondary">Предпросмотр сайта ↗</button><button id="site-reload" type="button" class="secondary">Загрузить опубликованное</button><button id="site-export" type="button" class="secondary">Скачать настройки</button></div>
+    <div class="filters settings-filters"><label>Поиск по тексту<input id="site-search" type="search" placeholder="Например: поддержка, Info, инструкция"></label><label>Раздел<select id="site-group"><option value="">Все разделы</option></select></label><label>Язык текста<select id="site-language"><option value="ru">Русский</option><option value="en">English</option><option value="hi">हिन्दी</option></select></label></div>
+    <p class="muted">Без собственного текста на английском и хинди используется исходный перевод. Цвет и язык по умолчанию действуют на новых посетителей; личный выбор пользователя сохраняется. Видеофайлы можно заменить ссылкой на MP4.</p>
+    <form id="site-form"><div id="site-fields"></div><div class="save-row"><p id="site-message" class="message" role="status" aria-live="polite"></p><button id="site-save" type="submit">Сохранить настройки сайта</button></div></form>
+    <div class="overview-grid settings-utilities">
+     <article class="panel"><h3>Загрузить изображение</h3><p class="muted">Логотип, Telegram-баннер или фон статьи. PNG, JPG, WebP до 1 МБ. После загрузки сохрани настройки.</p><label>Куда установить<select id="site-image-target"><option value="media.logo">Логотип</option><option value="media.robot">Telegram-баннер</option><option value="media.workBackground">Фон статьи</option></select></label><label>Выбрать файл<input id="site-image-upload" type="file" accept="image/png,image/jpeg,image/webp"></label></article>
+     <article class="panel"><h3>История настроек</h3><p class="muted">Последние 10 версий. Время указано по Москве. Восстановление не затрагивает аккаунты, материалы и оплаты.</p><label>Предыдущая версия<select id="site-history"><option value="">Пока нет сохранённых версий</option></select></label><button id="site-restore" type="button" class="secondary">Восстановить версию</button></article>
+     <article class="panel"><h3>Пароль администратора</h3><form id="site-password-form"><label>Текущий пароль<input id="site-password-current" type="password" autocomplete="current-password" required maxlength="256"></label><label>Новый пароль<input id="site-password-new" type="password" autocomplete="new-password" required minlength="12" maxlength="256"></label><label>Повтори новый пароль<input id="site-password-confirm" type="password" autocomplete="new-password" required minlength="12" maxlength="256"></label><label id="password-mfa-label" hidden>Код двухфакторной защиты<input id="site-password-code" autocomplete="one-time-code" maxlength="64"></label><button type="submit">Изменить пароль</button></form></article>
+     <article class="panel"><h3>Двухфакторная защита администратора</h3><p id="mfa-status" class="status-pill">Загружаем…</p><p class="muted">После включения для входа потребуется пароль и код приложения-аутентификатора. Поддерживаются приложения с TOTP. Вход в админ-панель сохраняется 24 часа с момента входа, включая перезапуски сайта. Ручной выход, смена пароля или настроек двухфакторной защиты завершают соответствующие сессии.</p>
+      <form id="mfa-start-form"><label>Текущий пароль<input id="mfa-password" type="password" autocomplete="current-password" required maxlength="256"></label><button type="submit">Настроить двухфакторную защиту</button></form>
+      <div id="mfa-enrollment" hidden><p>Добавь этот ключ вручную в приложение: тип TOTP, 6 цифр, период 30 секунд.</p><label>Секретный ключ<input id="mfa-secret" readonly autocomplete="off"></label><button id="mfa-copy" type="button" class="secondary">Копировать ключ</button><details><summary>Ссылка для импорта в приложение</summary><textarea id="mfa-uri" readonly rows="3"></textarea></details><form id="mfa-confirm-form"><label>Код из приложения<input id="mfa-code" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></label><button type="submit">Подтвердить и включить 2FA</button></form></div>
+      <div id="mfa-recovery" hidden><h4>Резервные коды — показываются один раз</h4><pre id="mfa-recovery-codes"></pre><button type="button" id="mfa-download" class="secondary">Скачать резервные коды</button></div>
+      <form id="mfa-disable-form" hidden><label>Текущий пароль<input id="mfa-disable-password" type="password" autocomplete="current-password" required maxlength="256"></label><label>Код приложения или резервный код<input id="mfa-disable-code" autocomplete="one-time-code" required maxlength="64"></label><button type="submit" class="secondary">Отключить двухфакторную защиту</button></form><p id="mfa-message" class="message" role="status"></p>
+     </article>
+     <article class="panel"><h3>Материалы и оплата</h3><p>Папки, названия, TXT, инструкции и ссылки редактируются во вкладке «Модели и промпты». Статья с видео и текст окна подписки — во вкладке «Баннеры».</p><p class="muted">Суммы и способы оплаты связаны с Telegram-ботом. Здесь они не дублируются, чтобы цена на сайте совпадала с создаваемым счётом. Доступ к материалам проверяется сервером.</p></article>
+    </div>
+   </section>
+   <section id="panel-support" role="tabpanel" aria-labelledby="tab-support" hidden>
+    <div class="section-heading"><div><h2>Обращения в поддержку</h2><p>Чат сайта: новые сообщения, история переписки и ответы пользователям.</p></div><button type="button" class="secondary" id="support-admin-refresh">Обновить</button></div>
+    <div class="support-admin-filters"><label>Поиск<input id="support-admin-search" type="search" maxlength="100" placeholder="Имя, email, Telegram ID или номер обращения"></label><label>Показать<select id="support-admin-filter"><option value="all">Все обращения</option><option value="waiting">Ожидают ответа</option><option value="open">Открытые</option><option value="closed">Закрытые</option></select></label></div>
+    <p id="support-admin-feedback" class="message" role="status"></p>
+    <div class="support-admin-layout"><section class="support-admin-inbox" aria-label="Список обращений"><div id="support-admin-list"></div><div class="pagination"><button type="button" class="secondary" id="support-admin-prev">Назад</button><span id="support-admin-page"></span><button type="button" class="secondary" id="support-admin-next">Далее</button></div></section>
+    <section class="support-admin-conversation" aria-label="Переписка"><p id="support-admin-empty">Выберите обращение слева, чтобы прочитать переписку и ответить.</p><div id="support-admin-detail" hidden><header class="support-admin-heading"><div><h3 id="support-admin-name"></h3><p id="support-admin-identity"></p><code id="support-admin-id"></code></div><button id="support-admin-status" type="button" class="secondary">Закрыть обращение</button></header><div id="support-admin-history" class="support-admin-history"><button type="button" id="support-admin-earlier" class="secondary" hidden>Предыдущие сообщения</button><ol id="support-admin-messages" aria-live="polite" aria-relevant="additions"></ol></div><form id="support-admin-form"><label for="support-admin-reply">Ответ пользователю</label><textarea id="support-admin-reply" maxlength="4000" rows="3" placeholder="Напишите ответ…" required></textarea><div class="support-admin-compose-footer"><span id="support-admin-count">0 / 4000</span><button type="submit" id="support-admin-send">Отправить ответ</button></div><p id="support-admin-reply-feedback" class="message" role="status"></p></form></div></section></div>
+   </section>
+   <section id="panel-accounts" role="tabpanel" aria-labelledby="tab-accounts" hidden>
+    <div class="section-heading"><div><h2>Аккаунты сайта</h2><p>Поиск пользователя для поддержки. Подписками можно управлять в админке Telegram-бота.</p></div><button type="button" class="secondary" id="accounts-refresh">Обновить</button></div>
+    <label class="account-search">Поиск<input id="account-search" type="search" placeholder="ID сайта, имя, email или Telegram ID"></label>
+    <p id="accounts-message" class="message" role="status"></p>
+    <div id="account-list" class="account-list"></div>
+    <div class="pagination"><button type="button" class="secondary" id="accounts-prev">← Назад</button><span id="accounts-page"></span><button type="button" class="secondary" id="accounts-next">Далее →</button></div>
+   </section>
+  </section>
+ </main>
+ <dialog id="trial-editor" aria-labelledby="trial-editor-heading">
+  <div class="section-heading"><div><p class="eyebrow">БЕСПЛАТНАЯ ПРОБНАЯ ВЫДАЧА · DEEPSEEK</p><h2 id="trial-editor-heading">Пробный промпт</h2></div><button id="trial-editor-close" type="button" class="secondary" aria-label="Закрыть редактор пробного промпта">✕</button></div>
+  <p class="muted">Здесь меняется текст, который пользователь получает после пробного выбора. Название, промпт и инструкция сохраняются вместе. Незавершённый черновик останется в этой вкладке, даже если закрыть окно.</p>
+  <form id="trial-editor-form">
+   <div class="trial-editor-toolbar"><label>Языковая версия<select id="trial-editor-language"><option value="ru">Русский</option><option value="en">English</option><option value="hi">हिन्दी</option></select></label><button id="trial-editor-reload" type="button" class="secondary">Загрузить опубликованное</button></div>
+   <label>Название<input id="trial-editor-title" required maxlength="160"></label>
+   <label>Текст пробного промпта<textarea id="trial-editor-content" rows="12" required maxlength="100000" spellcheck="false"></textarea></label><small id="trial-editor-count" class="muted"></small>
+   <label>Загрузить TXT в выбранный язык<input id="trial-editor-upload" type="file" accept=".txt,text/plain"></label>
+   <label>Инструкция<textarea id="trial-editor-instructions" rows="5" maxlength="20000"></textarea></label>
+   <details class="trial-editor-preview"><summary>Предпросмотр</summary><h3 id="trial-preview-title"></h3><p id="trial-preview-instructions" class="preserve-lines"></p><pre id="trial-preview-content"></pre></details>
+   <div class="save-row"><p id="trial-editor-message" class="message" role="status" aria-live="polite"></p><button id="trial-editor-save" type="submit">Сохранить пробный промпт</button></div>
+  </form>
+ </dialog>
+ <dialog id="model-preview" aria-labelledby="preview-title"><div class="section-heading"><div><p class="eyebrow" id="preview-provider"></p><h2 id="preview-title"></h2></div><button type="button" class="secondary" id="preview-close" aria-label="Закрыть предпросмотр">✕</button></div><h3 id="preview-file"></h3><pre id="preview-content"></pre><h3>Инструкция</h3><p id="preview-instructions" class="preserve-lines"></p><a id="preview-link" class="button secondary" target="_blank" rel="noopener noreferrer" hidden>Открыть ссылку ↗</a></dialog>
+</body>
+</html>
